@@ -28,6 +28,7 @@ const FEST_DIR_TO_IMPORT = {
     "core.ts": "core",
     "dom.ts": "dom",
     "object.ts": "object",
+    "style.ts": "style-lib",
     "veela.css": "veela",
     "lur.e": "lure",
     "icon.ts": "icon",
@@ -341,7 +342,7 @@ const PRELOAD_SHIM =
 const stripPreloadFromAppImports = (text) => {
     let changed = false;
     const next = text.replace(
-        /import\s*\{([^}]*)\}\s*from\s*(["'][^"']*com\/app\.js["'])\s*;?/g,
+        /import\s*\{([^}]*)\}\s*from\s*(["'][^"']+["'])\s*;?/g,
         (full, spec, from) => {
             if (!/\b__vitePreload\b/.test(spec)) return full;
             changed = true;
@@ -356,9 +357,12 @@ const stripPreloadFromAppImports = (text) => {
             return `import { ${cleaned} } from ${from};`;
         },
     );
-    if (!changed) return text;
-    if (!/const\s+__vitePreload\s*=/.test(next)) return PRELOAD_SHIM + next;
-    return next;
+    let out = changed ? next : text;
+    if (/\b__vitePreload\s*\(/.test(out) && !/const\s+__vitePreload\s*=/.test(out)) {
+        out = PRELOAD_SHIM + out;
+        changed = true;
+    }
+    return changed ? out : text;
 };
 
 export function rewriteVitePreloadBinding(outDir) {
@@ -387,7 +391,7 @@ export function rewriteVitePreloadBinding(outDir) {
             } catch {
                 continue;
             }
-            if (!text.includes("__vitePreload") || !text.includes("com/app.js")) continue;
+            if (!text.includes("__vitePreload")) continue;
             const next = stripPreloadFromAppImports(text);
             if (next === text) continue;
             writeFileSync(abs, next);
