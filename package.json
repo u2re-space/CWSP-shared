@@ -11,7 +11,8 @@
         "./shared": "./src/shared/index.ts",
         "./shared/*": "./src/shared/*",
         "./types": "./src/types/build-flags.d.ts",
-        "./types/*": "./src/types/*"
+        "./types/*": "./src/types/*",
+        "./*": "./fest-wire/*.ts"
     },
     "scripts": {
         "build": "node -e \"console.log('[cwsp-shared] library package — no Vite SPA/CRX build; import via package exports.')\"",
